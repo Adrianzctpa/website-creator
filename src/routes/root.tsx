@@ -34,7 +34,6 @@ function Root() {
             <Link to="/error">Error</Link>
             <button onClick={createDraggableElement}>Create draggable element</button>
             <button onClick={createAnotherElement}>Create another element</button>
-
             {element != null ? <Draggable element={element} /> : <></>}
         </div>
     )
