@@ -3,15 +3,20 @@ import { useEffect, useRef, useState } from "react";
 import "../assets/css/root.css"
 import useDrag from "../assets/hooks/useDrag";
 
+type Directions = {
+    left: number,
+    top: number,
+}
+
 function Root() {
     const [isHovering, setIsHovering] = useState<boolean>(false);
 
     const ref = useRef(null);
-    const [translate, setTranslate] = useState<DragState>({x: 0, y: 0});
+    const [directions, setDirections] = useState<Directions>({left: 0, top: 0});
 
-    const handleDrag = (e: MouseEvent) => {
-        const {movementX, movementY} = e;
-        setTranslate({x: translate.x + movementX, y: translate.y + movementY});
+    const handleMovement = (e: MouseEvent) => {
+        const {pageX, pageY} = e;
+        setDirections({left: pageX + 50, top: pageY + 50});
     }
 
     const getOffset = (el: HTMLElement) => {
@@ -22,33 +27,11 @@ function Root() {
         };
     }
 
-    const drag = useDrag(ref, [translate], {
-        onDrag: handleDrag,
-        onPointDown: (e: MouseEvent) => {
+    const drag = useDrag(ref, [directions], {
+        onDrag: handleMovement,
+        onLeave: (e: MouseEvent) => {
         },
-        onPointMove: (e: MouseEvent) => {
-        },
-        onPointUp: (e: MouseEvent) => {
-            if (!ref.current) return
-
-            let element = ref.current as HTMLElement;
-            const offsets = getOffset(element)
-            let el = document.elementFromPoint(offsets.left, offsets.top)
-
-            if (el) {
-                element.style.transform = `translate(0px, 0px)`
-                el.appendChild(element)
-            } 
-        }
     })
-
-    useEffect(() => {
-        if (isHovering) {
-            console.log("Hovering")
-        } else {
-            console.log("Not hovering")
-        }
-    }, [isHovering])
 
     function createDraggableElement() {
         let dragElement = document.createElement('div');
@@ -77,9 +60,11 @@ function Root() {
 
             <div onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)} className={"redbox"}>Example Div</div>
             <div ref={ref} style={{
-                transform: `translate(${translate.x}px, ${translate.y}px)`,
-                width: '100px',
-                height: '100px',
+                position: 'absolute',
+                left: directions.left,
+                top: directions.top,
+                width: '200px',
+                height: '200px',
                 backgroundColor: 'blue'
             }}></div>
         </> 

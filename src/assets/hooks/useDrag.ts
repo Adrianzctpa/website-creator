@@ -1,41 +1,42 @@
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useEffect, useState, useRef } from "react";
 import { DragProps, DragState } from "../types";
 
 const useDrag = (ref: RefObject<HTMLElement>, dependencies: DragState[] = [], options: DragProps) => {
-    const { onPointDown, onPointMove, onDrag, onPointUp } = options;
+    const { onDrag, onLeave } = options;
 
     const [isDragging, setIsDragging] = useState<boolean>(false);
-
-    const handlePointDown = (e: PointerEvent) => {
-        setIsDragging(true);
-        onPointDown(e);
-    }
-
-    const handlePointUp = (e: PointerEvent) => {
-        setIsDragging(false);
-        onPointUp(e);
-    }
-
-    const handlePointMove = (e: PointerEvent) => {
-        onPointMove(e);
-
-        if (isDragging) {
-            onDrag(e);
+    const dragRef = useRef<boolean>();
+    dragRef.current = isDragging;
+    
+    const handleDragLeave = (e: MouseEvent) => {
+        if (!dragRef.current) {
+            return;
         }
+
+        setIsDragging(false);
+        
+        document.removeEventListener("mousemove", onDrag);
+        document.removeEventListener("click", handleDragLeave);
+
+        onLeave(e);
+    }
+
+    const handleDrag = (e: MouseEvent) => {
+        e.stopPropagation();
+        setIsDragging(true);
+
+        document.addEventListener("mousemove", onDrag);
+        document.addEventListener("click", handleDragLeave);
     }
 
     useEffect(() => {
         const current = ref.current;
 
         if (current) {
-            document.addEventListener("pointerdown", handlePointDown);
-            document.addEventListener("pointerup", handlePointUp);
-            document.addEventListener("pointermove", handlePointMove);
+            current.addEventListener("click", handleDrag);
 
             return () => {
-                document.removeEventListener("pointerdown", handlePointDown);
-                document.removeEventListener("pointerup", handlePointUp);
-                document.removeEventListener("pointermove", handlePointMove);
+                current.removeEventListener("click", handleDrag);
             }
         }
 

@@ -1,13 +1,11 @@
 export type Nullable<T> = T | null;
 
 export type DragProps = {
-    onPointDown: (e: MouseEvent) => void;
-    onPointMove: (e: MouseEvent) => void;
-    onPointUp: (e: MouseEvent) => void;
-    onDrag: (e: MouseEvent) => void;
+    onDrag: (e: MouseEvent) => any;
+    onLeave: (e: MouseEvent) => any;
 }
 
 export type DragState = {
-    x: number,
-    y: number,
+    left: number,
+    top: number,
 }
